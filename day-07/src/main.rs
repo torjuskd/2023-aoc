@@ -79,4 +79,85 @@ fn main() {
         .sum::<usize>();
     println!("part 1 ans: {}", sum);
     assert_eq!(sum, 255048101);
+
+    // part 2
+    let lines = read_lines("input");
+    let lines = lines.iter();
+    // from high card to five of a kind
+    let mut types: Vec<Vec<(&str, u32)>> = vec![vec![]; 7];
+
+    let cards_bids = lines.map(|l| {
+        let mut split = l.split(' ');
+        let first = split.next().unwrap();
+        let second = split.next().unwrap().parse::<u32>().unwrap();
+        (first, second)
+    });
+
+    let possible_cards = [
+        'J', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'Q', 'K', 'A',
+    ];
+    cards_bids.for_each(|(cards, bid)| {
+        let type_index = possible_cards
+            .iter()
+            .map(|replacement| {
+                let cards_perm = cards.replace('J', &replacement.to_string());
+                let matches = possible_cards
+                    .map(|possible_card| cards_perm.match_indices(possible_card).count());
+                return if matches.contains(&5) {
+                    6
+                } else if matches.contains(&4) {
+                    5
+                } else if matches.contains(&3) && matches.contains(&2) {
+                    4
+                } else if matches.contains(&3) {
+                    3
+                } else if matches.iter().filter(|count| **count == 2).count() == 2 {
+                    2
+                } else if matches.contains(&2) {
+                    1
+                } else {
+                    0
+                }
+            })
+            .max()
+            .unwrap();
+
+        types[type_index].push((cards, bid))
+    });
+    let sorted = types
+        .iter_mut()
+        .map(|t| {
+            t.sort_by(|a, b| {
+                let (a_s, _a_b) = a;
+                let (b_s, _b_b) = b;
+
+                a_s.chars()
+                    .map(|char_to_find_index_of| {
+                        possible_cards
+                            .iter()
+                            .position(|c| c == &char_to_find_index_of)
+                            .unwrap()
+                    })
+                    .zip(b_s.chars().map(|char_to_find_index_of| {
+                        possible_cards
+                            .iter()
+                            .position(|c| c == &char_to_find_index_of)
+                            .unwrap()
+                    }))
+                    .map(|(a, b)| a.cmp(&b))
+                    .find(|r| r == &Ordering::Greater || r == &Ordering::Less)
+                    .or(Some(Ordering::Equal))
+                    .unwrap()
+            });
+            t
+        })
+        .flatten();
+
+    let sum = sorted
+        .map(|(_str, bid)| bid)
+        .enumerate()
+        .map(|(i, bid)| usize::try_from(*bid).unwrap() * (i + 1))
+        .sum::<usize>();
+    println!("part 2 ans: {}", sum);
+    assert_eq!(sum, 253718286);
 }
