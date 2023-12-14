@@ -36,12 +36,8 @@ fn main() {
                 let amount = split.next().unwrap().parse::<i32>().unwrap();
                 let color = split.next().unwrap();
 
-                let limit_surpassed = match game_map.get(color) {
-                    Some(limit) => limit < &amount,
-                    None => false,
-                };
-                if limit_surpassed {
-                    should_add = false
+                if game_map.get(color).unwrap() < &amount {
+                    should_add = false;
                 };
             });
         });
@@ -50,7 +46,6 @@ fn main() {
         };
     });
 
-    // println!("part 1 list: {:#?}", lines);
     println!("part 1 ans: {}", sum);
     assert_eq!(sum, 2593);
 
@@ -75,14 +70,9 @@ fn main() {
                 let amount = split.next().unwrap().parse::<i32>().unwrap();
                 let color = split.next().unwrap();
 
-                let update = match game_map.get(color) {
-                    Some(prev_max) => prev_max < &amount,
-                    None => false,
-                };
-
-                if update {
+                if game_map.get(color).unwrap() < &amount {
                     game_map.insert(color, amount);
-                }
+                };
             });
         });
         game_map.values().product::<i32>()
