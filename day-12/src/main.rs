@@ -1,3 +1,5 @@
+use itertools::Itertools;
+
 fn main() {
     // part 1
     let lines: Vec<_> = include_str!("../input")
@@ -8,17 +10,13 @@ fn main() {
     let perms: i32 = lines
         .iter()
         .map(|l| {
-            let mut springs_numbers = l.split(' ');
-            let springs = springs_numbers.next().unwrap();
-            let numbers = springs_numbers
-                .next()
-                .unwrap()
+            let (springs, numbers) = l.split_once(' ').unwrap();
+            let numbers = numbers
                 .split(',')
                 .map(|s| s.parse::<i32>().unwrap())
                 .collect();
 
             let n = recurse(springs.to_string(), numbers);
-            //println!("{n}");
             n
         })
         .sum();
@@ -36,19 +34,16 @@ fn main() {
     let perms: i32 = lines
         .iter()
         .map(|l| {
-            let mut springs_numbers = l.split(' ');
-            let mut springs = springs_numbers.next().unwrap();
-            let f = format!("{}?{}?{}?{}?{}", &springs, &springs, &springs, &springs, &springs);
-            springs = &f;
-            let numbers = springs_numbers
-                .next()
-                .unwrap()
+            let (springs, numbers) = l.split_once(' ').unwrap();
+            let springs  = std::iter::once(springs).cycle().take(5).join("?");
+            let numbers = numbers
                 .split(',')
                 .map(|s| s.parse::<i32>().unwrap())
-                .collect::<Vec<i32>>();
+                .collect_vec();
+            let numbers_len = numbers.len();
+            let numbers = numbers.into_iter().cycle().take(5 * numbers_len).collect_vec();
 
-            let numbers = (vec![numbers; 5]).iter().flatten().map(|n| n.clone()).collect::<Vec<_>>();
-            let n = recurse(springs.to_string(), numbers);
+            let n = recurse(springs, numbers);
             n
         })
         .sum();
