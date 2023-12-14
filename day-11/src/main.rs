@@ -4,52 +4,113 @@ fn main() {
         .split('\n')
         .filter(|l| !l.is_empty())
         .collect();
-    
-    let mut first_transform: Vec<String> = vec![];
+        
+    let mut i_indexes_to_add: Vec<bool> = vec![true; lines.clone().len()];
+    let mut j_indexes_to_add: Vec<bool> = vec![true; lines.clone().first().unwrap().len()];
+    let mut galaxies: Vec<(i64, i64)> = vec![];
 
     lines.iter().enumerate().for_each(|(i, l)| {
-        let mut append_extra_line = true;
         l.chars().enumerate().for_each(|(j, c)| {
-            if c != '.' { append_extra_line = false}
-        });
-        first_transform.push(l.to_string());
-        if append_extra_line {first_transform.push(l.to_string())};
-    });
-
-    println!("{:#?}", first_transform);
-
-    let mut indexes_to_add: Vec<bool> = vec![true; first_transform.clone().first().unwrap().len()];
-    first_transform.clone().iter().enumerate().for_each(|(i, l)| {
-        l.chars().enumerate().for_each(|(j, c)| {
-            if c != '.' { indexes_to_add[j] = false}
+            if c == '#' {
+                galaxies.push((i as i64, j as i64));
+                j_indexes_to_add[j] = false;
+                i_indexes_to_add[i] = false;
+            }
         });
     });
-    let second_transform = first_transform.iter().enumerate().map(|(i, l)| {
-        let mut s = String::new();
-        l.chars().enumerate().for_each(|(j, c)| {
-            s.push(c);
-            if indexes_to_add[j] == true {s.push(c)}
-        });
-        s
-    });
 
-    let second_transform = second_transform.clone();
-
-    let mut galaxies : Vec<(i32, i32)>= vec![];
-    second_transform.clone().enumerate().for_each(|(i, l)| {
-        l.chars().enumerate().for_each(|(j, c)| {
-            if c == '#' { galaxies.push((i as i32, j as i32))}
-        });
-    });
-    
-    println!("{:#?}", galaxies);
-
-    let mut ans: usize = 0;
+    let to_add = 1;
+    let mut ans = 0;
     while !galaxies.is_empty() {
         let (x_1, y_1) = galaxies.pop().unwrap();
-        ans += galaxies.iter().map(|(x_2, y_2)| ((x_2-x_1).abs() + (y_2-y_1).abs()) as usize ).sum::<usize>()
+        ans += galaxies
+            .iter()
+            .map(|(x_2, y_2)| -> i64 {
+
+                let x_1 = expand_x(x_1, &i_indexes_to_add, to_add);
+                let x_2 = expand_x(*x_2, &i_indexes_to_add, to_add);
+
+                let y_1 = expand_y(y_1, &j_indexes_to_add, to_add);
+                let y_2 = expand_y(*y_2, &j_indexes_to_add, to_add);
+
+
+                let temp = (x_2 - x_1).abs() + (y_2 - y_1).abs();
+                    
+                        temp
+            })
+            .sum::<i64>()
     }
 
     println!("part 1 ans: {}", ans);
     assert_eq!(ans, 9550717);
+
+    // part 2
+    let lines: Vec<_> = include_str!("../input")
+        .split('\n')
+        .filter(|l| !l.is_empty())
+        .collect();
+
+    let mut i_indexes_to_add: Vec<bool> = vec![true; lines.clone().len()];
+    let mut j_indexes_to_add: Vec<bool> = vec![true; lines.clone().first().unwrap().len()];
+    let mut galaxies: Vec<(i64, i64)> = vec![];
+
+    lines.iter().enumerate().for_each(|(i, l)| {
+        l.chars().enumerate().for_each(|(j, c)| {
+            if c == '#' {
+                galaxies.push((i as i64, j as i64));
+                j_indexes_to_add[j] = false;
+                i_indexes_to_add[i] = false;
+            }
+        });
+    });
+
+    let to_add = 1000000-1;
+    let mut ans = 0;
+    while !galaxies.is_empty() {
+        let (x_1, y_1) = galaxies.pop().unwrap();
+        ans += galaxies
+            .iter()
+            .map(|(x_2, y_2)| -> i64 {
+
+                let x_1 = expand_x(x_1, &i_indexes_to_add, to_add);
+                let x_2 = expand_x(*x_2, &i_indexes_to_add, to_add);
+
+                let y_1 = expand_y(y_1, &j_indexes_to_add, to_add);
+                let y_2 = expand_y(*y_2, &j_indexes_to_add, to_add);
+
+
+                let temp = (x_2 - x_1).abs() + (y_2 - y_1).abs();
+                    
+                        temp
+            })
+            .sum::<i64>()
+    }
+
+    println!("part 2 ans: {}", ans);
+    assert_eq!(ans, 648458253817);
+}
+
+fn expand_y(y: i64, j_indexes_to_add: &Vec<bool>, to_add: i64) -> i64 {
+    y +
+    (0..y)
+            .map(|y| {
+                if j_indexes_to_add[y as usize] {
+                    to_add
+                } else {
+                    0
+                }
+            })
+            .sum::<i64>()
+}
+
+fn expand_x(x: i64, i_indexes_to_add: &Vec<bool>, to_add: i64) -> i64 {
+    x +
+    (0..x)
+            .map(|x| {
+                if i_indexes_to_add[x as usize] {
+                    to_add
+                } else {
+                    0
+                }
+            }).sum::<i64>()
 }
