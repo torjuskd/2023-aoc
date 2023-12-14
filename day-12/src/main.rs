@@ -26,6 +26,36 @@ fn main() {
     let ans = perms;
     println!("part 1 ans: {}", ans);
     assert_eq!(ans, 7163);
+
+    // part 2
+    let lines: Vec<_> = include_str!("../test_input")
+        .split('\n')
+        .filter(|l| !l.is_empty())
+        .collect();
+
+    let perms: i32 = lines
+        .iter()
+        .map(|l| {
+            let mut springs_numbers = l.split(' ');
+            let mut springs = springs_numbers.next().unwrap();
+            let f = format!("{}?{}?{}?{}?{}", &springs, &springs, &springs, &springs, &springs);
+            springs = &f;
+            let numbers = springs_numbers
+                .next()
+                .unwrap()
+                .split(',')
+                .map(|s| s.parse::<i32>().unwrap())
+                .collect::<Vec<i32>>();
+
+            let numbers = (vec![numbers; 5]).iter().flatten().map(|n| n.clone()).collect::<Vec<_>>();
+            let n = recurse(springs.to_string(), numbers);
+            n
+        })
+        .sum();
+
+    let ans = perms;
+    println!("part 2 ans: {}", ans);
+    assert_eq!(ans, 525152);
 }
 
 fn recurse(s: String, numbers: Vec<i32>) -> i32 {
