@@ -37,4 +37,36 @@ fn main() {
 
     println!("part 1 ans: {}", sum_next_hist_vals);
     assert_eq!(sum_next_hist_vals, 2005352194);
+
+    // part 2
+    let lines = read_lines("input");
+    let lines = lines.iter();
+
+    let sum_prev_hist_vals: i64 = lines
+        .map(|l| {
+            l.split(' ')
+                .map(|s| s.trim().parse::<i64>().unwrap())
+                .collect::<Vec<i64>>()
+        })
+        .map(|l| {
+            let mut diffs: Vec<Vec<i64>> = vec![];
+            let mut rev  = l.clone();
+            rev.reverse();
+            let mut nums = rev;
+            let first_row = nums.clone();
+            diffs.push(first_row);
+
+            while !nums.iter().all(|n| n == &0) {
+                let nums_1 = nums.iter().rev().skip(1).rev();
+                let nums_2 = nums.iter().skip(1);
+                nums = nums_1.zip(nums_2).map(|(a, b)| b - a).collect();
+                diffs.push(nums.clone());
+            }
+            println!("{:#?}",diffs);
+            diffs.iter().map(|d| d.last().unwrap()).sum::<i64>()
+        })
+        .sum();
+
+    println!("part 2 ans: {}", sum_prev_hist_vals);
+    assert_eq!(sum_prev_hist_vals, 1077);
 }
